@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="package" default="package" basedir="../../">
+
+    <property name="customer" value="xuyh" />
+	<property name="version" value="1.0.0" />
+	<property name="jar_file_name" value="simple_video_player-${version}.jar" />
+
+	<tstamp prefix="buildtime">
+		<format property="packageSign" pattern="yyMMddHHmm" />
+	</tstamp>
+
+	<target name="init">
+		<delete dir="${basedir}/build/target" />
+		<mkdir dir="${basedir}/build/target" />
+		<delete dir="${basedir}/build/source" /> 		
+		<mkdir dir="${basedir}/build/source" />
+		<copy todir="${basedir}/build/source/server"  overwrite="true"  failonerror="false">
+			<fileset dir="${basedir}/server">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="build"  depends="init">
+		<exec executable="cmd" dir="${basedir}/build/source/server">
+			<arg value="/c" />
+			<arg value="mvn" />
+			<arg value="clean" />
+			<arg value="package" />
+		</exec>
+	</target>
+
+	<target name="package" depends="build">
+		<unzip src="${basedir}/build/adapters/win32.zip" dest="${basedir}/build/target/win32"/>
+		<unzip src="${basedir}/build/adapters/win64.zip" dest="${basedir}/build/target/win64"/>
+		<copy todir="${basedir}/build/target/win32" overwrite="true" failonerror="false">
+			<fileset file="${basedir}/build/adapters/run.bat"/>
+			<filterset>  
+				<filter token="jar_file_name" value="${jar_file_name}"/>
+			</filterset>
+		</copy>
+		<copy todir="${basedir}/build/target/win64" overwrite="true" failonerror="false">
+			<fileset file="${basedir}/build/adapters/run.bat"/>
+			<filterset>  
+				<filter token="jar_file_name" value="${jar_file_name}"/>
+			</filterset>
+		</copy>
+		<copy todir="${basedir}/build/target/win32/resources" overwrite="true" failonerror="false">
+			<fileset dir="${basedir}/build/source/server/resources">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<copy todir="${basedir}/build/target/win64/resources" overwrite="true" failonerror="false">
+			<fileset dir="${basedir}/build/source/server/resources">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<copy file="${basedir}/build/source/server/application.properties" overwrite="true"
+			todir="${basedir}/build/target/win32">
+	    </copy>
+		<copy file="${basedir}/build/source/server/application.properties" overwrite="true"
+			todir="${basedir}/build/target/win64">
+	    </copy>
+		<copy file="${basedir}/build/source/server/target/${jar_file_name}" overwrite="true"
+			todir="${basedir}/build/target/win32">
+	    </copy>
+		<copy file="${basedir}/build/source/server/target/${jar_file_name}" overwrite="true"
+			todir="${basedir}/build/target/win64">
+	    </copy>
+
+		<zip destfile="${basedir}/build/target/simple_video_player-${version}-${buildtime.packageSign}.win32.zip"
+			 basedir="${basedir}/build/target/win32"
+			 includes="**/*"/>	
+		<zip destfile="${basedir}/build/target/simple_video_player-${version}-${buildtime.packageSign}.win64.zip"
+			 basedir="${basedir}/build/target/win64"
+			 includes="**/*"/>
+	</target>
+
+</project>
